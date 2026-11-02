@@ -7,10 +7,25 @@
 
 | 文件 | 作用 |
 |---|---|
-| `char_echo.c` | 字符设备模块源码 |
-| `char_echo_test.c` | 用户态读写测试 |
+| `module/char_echo.c` | 字符设备模块源码 |
+| `module/Makefile` | 只调用 Kbuild 编译内核模块 |
+| `test/char_echo_test.c` | 用户态读写测试 |
+| `test/Makefile` | 只使用 C 编译器编译测试程序 |
 | `run_test.sh` | 编译、加载、创建设备节点、测试、卸载 |
-| `Makefile` | Kbuild 与用户态测试构建 |
+
+目录分层如下：
+
+```text
+linux-module-lab/
+├── module/
+│   ├── char_echo.c
+│   └── Makefile
+├── test/
+│   ├── char_echo_test.c
+│   └── Makefile
+├── run_test.sh
+└── README.md
+```
 
 ## 前置条件
 
@@ -59,17 +74,25 @@ char_echo: unloaded
 ## 手动观察
 
 ```bash
-make
-sudo insmod ./char_echo.ko
+make -C module
+make -C test
+sudo insmod ./module/char_echo.ko
 grep char_echo /proc/devices
 sudo mknod /dev/char_echo c <主设备号> 0
 sudo chmod 0666 /dev/char_echo
-./char_echo_test
+./test/char_echo_test
 printf 'kernel echo\n' > /dev/char_echo
 cat /dev/char_echo
 sudo rmmod char_echo
 sudo rm -f /dev/char_echo
 sudo dmesg | tail -n 20
+```
+
+清理两个构建目录：
+
+```bash
+make -C test clean
+make -C module clean
 ```
 
 ## 一条读调用如何到达驱动
